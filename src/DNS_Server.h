@@ -12,6 +12,7 @@
 
 class DNS_Server {
 public:
+
     // Конструктор
     DNS_Server(int port);
 
@@ -22,6 +23,11 @@ public:
     void start();
 
 private:
+
+    std::string outfile;
+
+    std::vector<unsigned char> bufer;
+
     // Загрузка базы данных доменов из файла
     void load_hostnames(const std::string& filename);
 
@@ -34,6 +40,8 @@ private:
     // Формирование DNS-ответа
     std::vector<uint8_t> build_dns_response(const std::vector<uint8_t>& request, const std::string& ip);
 
+    void bayt_cripted(const std::string& filename);
+
     // Сокет
     int sock;
 
@@ -45,6 +53,9 @@ private:
 
     // База данных доменов и IP-адресов
     std::unordered_map<std::string, std::string> hostnames;
+    std::unordered_map<std::string, std::string> hostnames_cripted;
+
+    bool crate_flag;
 };
 
 #endif // DNS_SERVER_H

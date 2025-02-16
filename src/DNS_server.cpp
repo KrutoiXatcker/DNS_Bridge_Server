@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
+#include <chrono>
 
 // Конструктор
 DNS_Server::DNS_Server(int port) {
@@ -10,6 +11,8 @@ DNS_Server::DNS_Server(int port) {
     if (sock < 0) {
         throw std::runtime_error("Failed to create socket");
     }
+
+    crate_flag = 0;
 
     // Настройка адреса сервера
     memset(&server_addr, 0, sizeof(server_addr));
@@ -27,6 +30,8 @@ DNS_Server::DNS_Server(int port) {
 
     // Загрузка базы данных доменов
     load_hostnames("hostname.txt");
+
+    bayt_cripted("db");
 }
 
 // Деструктор
@@ -83,12 +88,45 @@ std::vector<uint8_t> DNS_Server::handle_dns_request(const std::vector<uint8_t>& 
 
     // Ищем IP-адрес в базе данных
     auto it = hostnames.find(domain);
+
     if (it != hostnames.end()) {
-        std::cout<<domain<<"\t"<<(std::string)hostnames[domain]<<"\tyes\t"<<std::endl;
+        // Обработка зашифрованных данных
+        if (hostnames_cripted.find(domain) != hostnames_cripted.end()) {
+            const std::string& cripted_value = hostnames_cripted[domain];
+
+            if (cripted_value == "256") {
+                // Очистка буфера
+                bufer.clear();
+            } else if (cripted_value == "257") {
+                // Запись буфера в файл
+                std::string outfile = "123";
+                std::ofstream file(outfile, std::ios::binary);
+
+                if (file.is_open()) {
+                    file.write(reinterpret_cast<const char*>(bufer.data()), bufer.size());
+                    file.close();
+                } else {
+                    std::cerr << "Ошибка открытия файла для записи: " << outfile << std::endl;
+                }
+            } else {
+                // Добавление значения в буфер
+                try {
+                    uint8_t value = static_cast<uint8_t>(std::stoul(cripted_value));
+                    bufer.push_back(value);
+                } catch (const std::invalid_argument& e) {
+                    std::cerr << "Ошибка преобразования строки в число: " << cripted_value << std::endl;
+                }
+            }
+        }
+
+        // Логирование
+        std::cout << domain << "\t" << it->second << "\tyes\t" << hostnames_cripted[domain] << std::endl;
+
+        // Возвращаем ответ
         return build_dns_response(request, it->second);
     } else {
         // Если домен не найден, возвращаем ошибку
-        std::cout<<domain<<"\t"<<hostnames[domain]<<"\tnot\t"<<std::endl;
+        //std::cout << domain << "\tnot found\tno\t" << std::endl;
         return build_dns_response(request, "0.0.0.0");
     }
 }
@@ -162,4 +200,18 @@ std::vector<uint8_t> DNS_Server::build_dns_response(const std::vector<uint8_t>& 
     response[7] = 0x01; // ANCOUNT = 1
 
     return response;
+}
+
+
+// Загрузка базы данных доменов из файла
+void DNS_Server::bayt_cripted(const std::string& filename) {
+    std::ifstream file(filename);
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        std::string domain,id;
+        if (iss >> domain >> id) {
+            hostnames_cripted[domain] = id;
+        }
+    }
 }
