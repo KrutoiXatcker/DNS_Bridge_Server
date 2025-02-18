@@ -9,6 +9,10 @@
 #include <cstring>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <fstream>
+#include <sstream>
+#include <chrono>
+
 
 class DNS_Server {
 public:
@@ -24,8 +28,10 @@ public:
 
 private:
 
+    // Параметор хронит имя выходного файла
     std::string outfile;
 
+    // Буфер для приема файла
     std::vector<unsigned char> bufer;
 
     // Загрузка базы данных доменов из файла
@@ -40,6 +46,7 @@ private:
     // Формирование DNS-ответа
     std::vector<uint8_t> build_dns_response(const std::vector<uint8_t>& request, const std::string& ip);
 
+    // Загрузка даных про нумерацию доменов в хеш-таблицу
     void bayt_cripted(const std::string& filename);
 
     // Сокет

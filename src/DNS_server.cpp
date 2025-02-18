@@ -1,8 +1,5 @@
 #include "DNS_Server.h"
-#include <fstream>
-#include <sstream>
-#include <unordered_map>
-#include <chrono>
+
 
 // Конструктор
 DNS_Server::DNS_Server(int port) {
