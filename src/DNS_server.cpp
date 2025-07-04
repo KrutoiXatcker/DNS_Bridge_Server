@@ -1,5 +1,5 @@
 #include "DNS_Server.h"
-
+#include <iomanip>
 
 // Конструктор
 DNS_Server::DNS_Server(int port) {
@@ -94,6 +94,7 @@ std::vector<uint8_t> DNS_Server::handle_dns_request(const std::vector<uint8_t>& 
             if (cripted_value == "256") {
                 // Очистка буфера
                 bufer.clear();
+
             } else if (cripted_value == "257") {
                 // Запись буфера в файл
                 std::string outfile = "123";
@@ -105,6 +106,7 @@ std::vector<uint8_t> DNS_Server::handle_dns_request(const std::vector<uint8_t>& 
                 } else {
                     std::cerr << "Ошибка открытия файла для записи: " << outfile << std::endl;
                 }
+
             } else {
                 // Добавление значения в буфер
                 try {
@@ -117,7 +119,7 @@ std::vector<uint8_t> DNS_Server::handle_dns_request(const std::vector<uint8_t>& 
         }
 
         // Логирование
-        std::cout << domain << "\t" << it->second << "\tyes\t" << hostnames_cripted[domain] << std::endl;
+        std::cout <<std::setw(20)<< domain << "\t" << it->second << "\tyes\t" << hostnames_cripted[domain] << std::endl;
 
         // Возвращаем ответ
         return build_dns_response(request, it->second);
